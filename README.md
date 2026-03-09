@@ -1,121 +1,140 @@
-# CLI AI Toolkit
+# Rate My Professor Search Website (219_tools)
 
-A SOLID-friendly Node.js CLI for AI utilities. It provides repeatable commands for research, model feedback, and image generation, with outputs saved in a predictable structure.
+This project runs a website UI at `scripts/rmp_ui.html` that searches live Rate My Professor data through a local API server.
 
-Live site: https://kaw393939.github.io/agentic_orchestration_toolkit/
+## What This Website Does
 
-## Start Here (Build From Scratch)
+- Searches real professor data from Rate My Professor.
+- Shows professor name, school, department, rating, difficulty, and would-take-again.
+- Supports filters in the UI:
+  - Sort by rating
+  - High-rated only (4+)
+  - School filter (next to `Search Results` header)
+- Paginates results.
+- Shows a papers section under each professor card (currently mock publication data).
 
-You will rebuild this toolkit yourself. The finished project is a reference, not a shortcut.
+## Project Files You Need
 
-1. Read the playbook and quick reference.
-2. Follow the build walkthrough step-by-step.
-3. Dogfood each command and log results.
+- UI: `scripts/rmp_ui.html`
+- Local API server: `api-server.ts`
+- RMP service logic: `src/services/RateMyProfessorService.ts`
 
-- [AI orchestration playbook](docs/orchestration-playbook.md)
-- [Orchestration toolkit quick reference](docs/orchestration-toolkit.md)
-- [Toolkit build walkthrough](docs/toolkit-build-walkthrough.md)
-- [Image generation workflow](docs/image-generation-workflow.md)
+## Architecture (Simple)
 
-## What You Will Build
-
-- **Web research:** `web-search` saves results in `references/`.
-- **Model feedback:** `gemini` saves outputs in `references/aI_feedback/`.
-- **Image generation:** `image-generate` saves outputs in `images/`.
-- **Docs + site:** You will document the process and maintain the brutalist site in `docs/`.
+1. Browser opens `scripts/rmp_ui.html`.
+2. UI calls local endpoint:
+   - `GET http://localhost:3000/api/search-professors?name=<query>&max=150`
+3. Local server forwards search to Rate My Professor GraphQL.
+4. Server returns normalized JSON to UI.
+5. UI renders and filters the results.
 
 ## Setup
 
 1. Install dependencies:
 
-   npm install
+```bash
+npm install
+```
 
-2. Create a `.env` file in the project root:
+2. Start the API server:
 
-   OPENAI_API_KEY=your_key_here
-   GEMINI_API_KEY=your_key_here
+```bash
+npm run api-server
+```
 
-  3. Playwright (required for the `screenshot` command):
+You should see:
 
-    After `npm install`, run:
+- `RMP API Server running on http://localhost:3000`
+- `Search endpoint: GET http://localhost:3000/api/search-professors?name=John`
 
-    ```bash
-    npx playwright install
-    Compression and Gemini
+3. Open the website UI:
 
-    - The `screenshot` command can compress/rescale images before sending to Gemini to reduce payloads. Use `--no-compress` to disable compression, `--max-width` to set maximum width, and `--quality` to tune JPEG quality.
-    - Use `gemini-test` to validate your `GEMINI_API_KEY` and model selection:
+- Open file: `scripts/rmp_ui.html` in your browser.
+- Search for a professor name (example: `Matthew Adams`).
 
-    ```bash
-    npm run dev -- gemini-test --model models/gemini-1.0
-    ```
+## API Endpoints
 
-    ```
+### Health
 
-    This downloads browser binaries required for capturing screenshots.
+`GET /api/health`
 
-### What Is a `.env` File?
+Example:
 
-A `.env` file stores environment variables (secrets and configuration) outside your code so keys are not hard-coded into source files.
+```bash
+curl http://localhost:3000/api/health
+```
 
-### Get Your API Keys
+### Search Professors
 
-- OpenAI API key: https://platform.openai.com/api-keys
-- Google Gemini API key (AI Studio): https://aistudio.google.com/app/apikey
+`GET /api/search-professors?name=<text>&max=<number>`
 
-## Build Path (Checklist)
+- `name` is required.
+- `max` is optional (bounded in server logic).
 
-- Create the CLI structure and command registry.
-- Add `web-search`, then dogfood it.
-- Add `gemini`, then dogfood it with an image.
-- Add `image-generate`, then dogfood it.
-- Document outputs and paths.
+Example:
 
-## Usage (After You Build It)
+```bash
+curl "http://localhost:3000/api/search-professors?name=Matthew%20Adams&max=150"
+```
 
-- Web search:
+Response shape:
 
-  npm run dev -- web-search "latest AI news"
+```json
+{
+  "success": true,
+  "query": "Matthew Adams",
+  "results": [
+    {
+      "id": "...",
+      "name": "Matthew Adams",
+      "school": "New Jersey Institute of Technology",
+      "avgRating": 4.1,
+      "numRatings": 20,
+      "avgDifficulty": 3.2,
+      "wouldTakeAgain": 80,
+      "department": "Civil Engineering"
+    }
+  ],
+  "count": 1
+}
+```
 
-- Gemini prompt (optional files):
+## Important Behavior Notes
 
-  npm run dev -- gemini "Summarize this image" --file ./path/to/image.jpg
+- UI is configured for real API professor results only (no fake professor fallback).
+- Some professors may not appear for every query due to upstream RMP ranking/indexing behavior.
+- Search completeness has been improved via backend pagination.
+- Papers under professor cards are still mock data (not live Scholar API).
 
-- Generate an image:
+## Troubleshooting
 
-  npm run dev -- image-generate "A cinematic lighthouse in a storm" --size 1024x1024
+### `Local API server is unavailable`
 
-## Output Locations
+Start server in project root:
 
-- Web search output: `references/`
-- Gemini responses: `references/aI_feedback/`
-- Generated images: `images/`
+```bash
+npm run api-server
+```
 
-## Common Failure Modes
+### Port 3000 already in use
 
-- Missing `OPENAI_API_KEY` or `GEMINI_API_KEY` in `.env`.
-- Running commands before `npm install`.
-- Forgetting to save outputs in `references/` or `images/`.
-- Skipping dogfooding and missing errors until later.
+Stop the process on port 3000, then restart `npm run api-server`.
 
-## Capstone Task
+### Search returns 0 results
 
-Add a new command from scratch and prove it works:
+- Try adding school keyword in query (example: `Matthew Adams NJIT`).
+- Try shorter or alternate spelling.
 
-1. Create a new command class.
-2. Register it in `src/index.ts`.
-3. Run it with real input.
-4. Save output to an organized folder.
-5. Write a short reflection on what broke and how you fixed it.
+### CORS error in browser
 
-## AI Orchestration (Concepts)
+Do not call RMP directly from browser code. Use the local API server only.
 
-AI orchestration is directing an AI system through a workflow of goals, tools, and constraints so outputs are reliable and repeatable. You are managing a workforce of experts, not just asking questions.
+## Sprint / QA Docs
 
-**Automation mindset:** Each time you catch yourself doing a repetitive task (searching, screenshotting, generating images, summarizing), design a tool and a process that removes you from the loop by turning manual steps into repeatable commands.
+Project planning and QA status are here:
 
-**Why it works:** Clarity reduces error, tool usage improves reliability, feedback loops increase quality, and organized outputs enable reuse.
-
-## Add a New Command
-
-Create a class in `src/commands` that implements the `Command` interface, then register it in `src/index.ts`.
+- `docs/sprints/planning/SPRINT_QA_AUDIT.md`
+- `docs/sprints/planning/SPRINT_PLAN_INDEX.md`
+- `docs/sprints/planning/CLEAN_ARCHITECTURE_STANDARD.md`
+- `docs/sprints/active/ACTIVE_SPRINT.md`
+- `docs/sprints/complete/`

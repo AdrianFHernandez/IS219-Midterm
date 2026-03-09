@@ -38,6 +38,18 @@ Implement adapters in outer layers:
 - `RmpGraphqlGateway` (real API)
 - `MockPapersGateway` (temporary until real source)
 
+## Publications Source Policy (Current)
+1. Publication data source must be Google Scholar only.
+2. Each publication must be verifiable by at least one evidence field:
+	- Scholar result URL, or
+	- citation count from Scholar response.
+3. Unverifiable rows are rejected by use-case policy and not shown as real publications.
+
+## Publications Source Policy (Future Extension)
+1. New sources (Crossref, Semantic Scholar, institutional repositories) are added as outer-layer adapters.
+2. Core publication use case contract stays stable; source-specific logic remains in adapters.
+3. Source priority and merge rules are configuration concerns, not domain-entity concerns.
+
 ## Clean Code Rules
 1. Single responsibility per function/module.
 2. No hidden side effects; explicit returns.

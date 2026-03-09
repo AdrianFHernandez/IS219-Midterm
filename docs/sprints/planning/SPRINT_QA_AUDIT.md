@@ -23,15 +23,24 @@ This audit reviewed sprint coverage, consistency, and implementation traceabilit
 4. Display consistency: results count reflects filtered dataset.
 
 ## Undefined Gap Review
-1. Gap: Papers section is still mock data.
-Resolution: explicitly tracked in Sprint 04/05 as pending integration and labeling.
+1. Gap: Papers section is still mock data and not source-verifiable.
+Resolution: tracked in Sprint 06 with hard requirements for Google Scholar source verification.
 2. Gap: Search ranking is constrained by upstream RMP behavior.
 Resolution: mitigated via pagination and optional query enrichment; documented non-determinism.
 3. Gap: No automated regression suite for UI + API contract.
 Resolution: covered by TDD sprint tasks and acceptance gates.
+
+## Publications Credibility Requirements
+1. Every publication shown in UI must include at least one of:
+	- Verifiable Google Scholar link to the publication result.
+	- Citation count sourced from Google Scholar response.
+2. UI must not present fabricated publication rows as real publications.
+3. If publication verification fails, UI must show `No verified publications found`.
+4. Current source is Google Scholar only; extension points must be adapter-based.
 
 ## QA Exit Criteria
 1. No fabricated professor fallback is returned to users.
 2. Query path is browser -> local API -> RMP GraphQL.
 3. School filtering is available next to `Search Results` and functions correctly.
 4. Sprint docs include explicit clean architecture boundaries and refactor plan.
+5. Publication rows in UI are verifiable and source-labeled as Google Scholar.

@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate My Professor - Advanced Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #searchInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-button {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .search-button:hover {
+            background: #764ba2;
+        }
+
+        .search-button:active {
+            transform: scale(0.98);
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .filter-group input[type="checkbox"] {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+
+        #status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: none;
+            font-weight: bold;
+        }
+
+        #status.loading {
+            display: block;
+            background: #e3f2fd;
+            color: #1976d2;
+            border-left: 4px solid #1976d2;
+        }
+
+        #status.success {
+            display: block;
+            background: #e8f5e9;
+            color: #388e3c;
+            border-left: 4px solid #388e3c;
+        }
+
+        #status.error {
+            display: block;
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+
+        .results-container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .results-header-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .results-header h2 {
+            color: #667eea;
+            font-size: 1.8em;
+        }
+
+        .school-filter-inline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .school-filter-inline label {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #667eea;
+            white-space: nowrap;
+        }
+
+        #schoolFilter {
+            border: 1px solid #d0d7ef;
+            border-radius: 6px;
+            padding: 6px 10px;
+            background: #f7f9ff;
+            color: #243b8a;
+            font-size: 0.9em;
+            min-width: 220px;
+        }
+
+        #schoolFilter:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .result-count {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .professor-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .professor-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .professor-card:hover {
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+            border-color: #667eea;
+        }
+
+        .professor-name {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .professor-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .info-value {
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .rating-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stars {
+            color: #ffc107;
+            font-size: 1.4em;
+        }
+
+        .rating-number {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .difficulty-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bar {
+            width: 100px;
+            height: 8px;
+            background: #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #ffc107, #ff6b6b);
+            background-size: 300%;
+        }
+
+        .school-dept {
+            font-size: 0.95em;
+            color: #666;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .professor-url {
+            margin-top: 15px;
+        }
+
+        .professor-url a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .professor-url a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .papers-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .papers-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .papers-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .paper-item {
+            background: #f9f9f9;
+            padding: 12px;
+            border-left: 3px solid #667eea;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .paper-item:hover {
+            background: #f0f0f0;
+            transform: translateX(2px);
+        }
+
+        .paper-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 0.95em;
+        }
+
+        .paper-meta {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .paper-year {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 0.8em;
+            margin-right: 8px;
+        }
+
+        .paper-citations {
+            font-size: 0.8em;
+            color: #999;
+        }
+
+        .paper-link {
+            font-size: 0.85em;
+        }
+
+        .paper-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .paper-link a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .no-papers {
+            font-size: 0.9em;
+            color: #999;
+            font-style: italic;
+            padding: 10px;
+            background: #f9f9f9;
+            border-left: 3px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pagination button:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .pagination button.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .professor-info {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                padding: 20px;
+            }
+
+            .results-container {
+                padding: 20px;
+            }
+
+            .results-header {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            #schoolFilter {
+                min-width: 100%;
+            }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .chart-container {
+            margin-top: 30px;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .chart-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .stat-box {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎓 Rate My Professor Search</h1>
+            <p class="subtitle">Find and compare professors with real-time ratings and reviews</p>
+            
+            <div class="search-box">
+                <input 
+                    id="searchInput" 
+                    type="text" 
+                    placeholder="Search by professor name, school, or department..."
+                    autocomplete="off"
+                />
+                <button class="search-button" id="searchBtn">Search</button>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label>
+                        <input type="checkbox" id="sortByRating" checked/>
+                        Sort by Rating
+                    </label>
+                </div>
+                <div class="filter-group">
+                    <label>
+                        <input type="checkbox" id="showOnlyHighRated" />
+                        High Rated Only (4+)
+                    </label>
+                </div>
+                <div class="filter-group">
+                    <label>
+                        <input type="checkbox" id="showStats" checked/>
+                        Show Stats
+                    </label>
+                </div>
+            </div>
+        </header>
+
+        <div id="status"></div>
+
+        <div id="resultsSection" class="results-container" style="display: none;">
+            <div class="results-header">
+                <div class="results-header-main">
+                    <h2>Search Results</h2>
+                    <div class="school-filter-inline">
+                        <label for="schoolFilter">School</label>
+                        <select id="schoolFilter">
+                            <option value="all">All Schools</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="result-count" id="resultCount">0 results</div>
+            </div>
+            <div id="professorList" class="professor-list"></div>
+            <div id="pagination" class="pagination"></div>
+            <div id="statsContainer" class="chart-container" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // RATE MY PROFESSOR SEARCH APPLICATION
+        // ============================================
+
+        // Data Storage
+        const appState = {
+            allProfessors: [],
+            filteredResults: [],
+            currentPage: 1,
+            resultsPerPage: 10,
+            searchQuery: '',
+            stats: {
+                averageRating: 0,
+                averageDifficulty: 0,
+                highestRating: 0,
+                lowestRating: 0,
+                totalSchools: 0
+            }
+        };
+
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+
+        function generateStars(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            let stars = '⭐'.repeat(fullStars);
+            if (hasHalfStar && fullStars < 5) stars += '✨';
+            return stars;
+        }
+
+        function updateStatus(message, type = 'loading') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = type;
+        }
+
+        function hideStatus() {
+            document.getElementById('status').style.display = 'none';
+        }
+
+        function populateSchoolFilterOptions() {
+            const schoolFilter = document.getElementById('schoolFilter');
+            const previousValue = schoolFilter.value || 'all';
+            const uniqueSchools = [...new Set(appState.allProfessors.map(p => p.school).filter(Boolean))]
+                .sort((a, b) => a.localeCompare(b));
+
+            schoolFilter.innerHTML = '';
+
+            const allOption = document.createElement('option');
+            allOption.value = 'all';
+            allOption.textContent = 'All Schools';
+            schoolFilter.appendChild(allOption);
+
+            uniqueSchools.forEach(school => {
+                const option = document.createElement('option');
+                option.value = school;
+                option.textContent = school;
+                schoolFilter.appendChild(option);
+            });
+
+            schoolFilter.value = uniqueSchools.includes(previousValue) ? previousValue : 'all';
+        }
+
+        function calculateStats(professors) {
+            if (professors.length === 0) return;
+
+            const ratings = professors.map(p => p.avgRating);
+            const difficulties = professors.map(p => p.avgDifficulty);
+            const schools = new Set(professors.map(p => p.school));
+
+            appState.stats = {
+                averageRating: (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(2),
+                averageDifficulty: (difficulties.reduce((a, b) => a + b, 0) / difficulties.length).toFixed(2),
+                highestRating: Math.max(...ratings).toFixed(2),
+                lowestRating: Math.min(...ratings).toFixed(2),
+                totalSchools: schools.size,
+                totalProfessors: professors.length
+            };
+        }
+
+        function displayStats() {
+            const showStats = document.getElementById('showStats').checked;
+            if (!showStats) {
+                document.getElementById('statsContainer').style.display = 'none';
+                return;
+            }
+
+            const statsContainer = document.getElementById('statsContainer');
+            statsContainer.innerHTML = `
+                <div class="chart-title">📊 Search Statistics</div>
+                <div class="stat-box">
+                    <div class="stat">
+                        <div class="stat-value">${appState.stats.averageRating}</div>
+                        <div class="stat-label">Avg Rating</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">${appState.stats.averageDifficulty}</div>
+                        <div class="stat-label">Avg Difficulty</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">${appState.stats.highestRating}</div>
+                        <div class="stat-label">Highest Rating</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">${appState.stats.lowestRating}</div>
+                        <div class="stat-label">Lowest Rating</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">${appState.stats.totalSchools}</div>
+                        <div class="stat-label">Unique Schools</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">${appState.stats.totalProfessors}</div>
+                        <div class="stat-label">Total Results</div>
+                    </div>
+                </div>
+            `;
+            statsContainer.style.display = 'block';
+        }
+
+        // ============================================
+        // SEARCH & FILTER FUNCTIONS
+        // ============================================
+
+        async function searchProfessor(query) {
+            if (!query.trim()) {
+                updateStatus('Please enter a professor name', 'error');
+                return;
+            }
+
+            updateStatus('🔍 Searching Rate My Professor...', 'loading');
+            appState.searchQuery = query;
+            appState.currentPage = 1;
+
+            try {
+                // Simulating GraphQL API call - Using local mock data for demo
+                const results = await mockFetchProfessors(query);
+                
+                appState.allProfessors = results;
+                populateSchoolFilterOptions();
+                applyFilters();
+                displayResults();
+                calculateStats(appState.filteredResults);
+                
+                if (appState.filteredResults.length === 0) {
+                    updateStatus(`No professors found for "${query}"`, 'error');
+                } else {
+                    updateStatus(`Found ${appState.filteredResults.length} professor(s)`, 'success');
+                    setTimeout(hideStatus, 3000);
+                }
+            } catch (error) {
+                updateStatus(`Error: ${error.message}`, 'error');
+                console.error('Search error:', error);
+            }
+        }
+
+        function applyFilters() {
+            let filtered = [...appState.allProfessors];
+
+            // Reset to page 1 on filter change
+            appState.currentPage = 1;
+
+            const selectedSchool = document.getElementById('schoolFilter').value;
+            if (selectedSchool !== 'all') {
+                filtered = filtered.filter(p => p.school === selectedSchool);
+            }
+
+            // High rated filter
+            if (document.getElementById('showOnlyHighRated').checked) {
+                filtered = filtered.filter(p => p.avgRating >= 4.0);
+            }
+
+            // Sort filter
+            if (document.getElementById('sortByRating').checked) {
+                filtered.sort((a, b) => b.avgRating - a.avgRating);
+            } else {
+                filtered.sort((a, b) => b.numRatings - a.numRatings);
+            }
+
+            appState.filteredResults = filtered;
+            calculateStats(appState.filteredResults);
+        }
+
+        function displayResults() {
+            const resultsSection = document.getElementById('resultsSection');
+            const professorList = document.getElementById('professorList');
+            const resultCount = document.getElementById('resultCount');
+
+            if (appState.filteredResults.length === 0) {
+                resultsSection.style.display = 'block';
+                professorList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <p>No professors found. Try a different search term.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            resultsSection.style.display = 'block';
+            resultCount.textContent = `${appState.filteredResults.length} result${appState.filteredResults.length !== 1 ? 's' : ''}`;
+
+            // Paginate results
+            const startIdx = (appState.currentPage - 1) * appState.resultsPerPage;
+            const endIdx = startIdx + appState.resultsPerPage;
+            const paginatedResults = appState.filteredResults.slice(startIdx, endIdx);
+
+            professorList.innerHTML = paginatedResults.map(prof => createProfessorCard(prof)).join('');
+            
+            // Fetch and display papers for each professor
+            paginatedResults.forEach(prof => {
+                fetchProfessorPapers(prof.name).then(papers => {
+                    renderPapers(papers, `papers-${prof.id}`);
+                });
+            });
+            
+            // Display stats if enabled
+            displayStats();
+            
+            // Display pagination
+            displayPagination();
+        }
+
+        function createProfessorCard(prof) {
+            const stars = generateStars(prof.avgRating);
+            const difficultyPercent = (prof.avgDifficulty / 5) * 100;
+
+            return `
+                <div class="professor-card">
+                    <div class="professor-name">${prof.name}</div>
+                    <div class="professor-info">
+                        <div class="info-item">
+                            <span class="info-label">Rating</span>
+                            <div class="rating-display">
+                                <span class="stars">${stars}</span>
+                                <span class="rating-number">${prof.avgRating.toFixed(2)}/5.0</span>
+                            </div>
+                            <span class="info-value" style="font-size: 0.9em; color: #999;">(${prof.numRatings} reviews)</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Difficulty Level</span>
+                            <div class="difficulty-bar">
+                                <div class="bar">
+                                    <div class="bar-fill" style="width: ${difficultyPercent}%; 
+                                        background-position: ${100 - difficultyPercent}% 0;"></div>
+                                </div>
+                                <span class="info-value">${prof.avgDifficulty.toFixed(1)}/5.0</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Would Take Again</span>
+                            <span class="info-value">${prof.wouldTakeAgain.toFixed(1)}%</span>
+                        </div>
+                    </div>
+                    <div class="school-dept">
+                        <strong>School:</strong> ${prof.school}<br>
+                        <strong>Department:</strong> ${prof.department}
+                    </div>
+                    <div class="professor-url">
+                        <a href="https://www.ratemyprofessors.com/professor/${prof.id}" target="_blank">
+                            View Full Profile →
+                        </a>
+                    </div>
+                    <div class="papers-section" id="papers-${prof.id}">
+                        <div class="papers-title">📚 Publications & Research</div>
+                        <div class="loading-spinner" style="margin: 10px 0;"></div>
+                        <p style="font-size: 0.9em; color: #999;">Loading publications...</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayPagination() {
+            const totalPages = Math.ceil(appState.filteredResults.length / appState.resultsPerPage);
+            const paginationEl = document.getElementById('pagination');
+
+            if (totalPages <= 1) {
+                paginationEl.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            for (let i = 1; i <= totalPages; i++) {
+                const isActive = i === appState.currentPage ? 'active' : '';
+                html += `<button class="${isActive}" onclick="goToPage(${i})">${i}</button>`;
+            }
+
+            paginationEl.innerHTML = html;
+        }
+
+        function goToPage(pageNum) {
+            appState.currentPage = pageNum;
+            displayResults();
+            document.querySelector('.results-container').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ============================================
+        // GOOGLE SCHOLAR & PAPERS FUNCTION
+        // Fetches publications for a given professor
+        // ============================================
+
+        async function fetchProfessorPapers(professorName, schId) {
+            try {
+                // Mock Google Scholar/Publications database
+                const papersDatabase = {
+                    'Dr. Jennifer Smith': [
+                        {
+                            title: 'Machine Learning Optimization Techniques in Cloud Computing',
+                            year: 2023,
+                            citations: 45,
+                            doi: '10.1109/ACCESS.2023.12345'
+                        },
+                        {
+                            title: 'Deep Learning Models for Distributed Systems',
+                            year: 2022,
+                            citations: 89,
+                            doi: '10.1145/COMPUTING.2022.98765'
+                        },
+                        {
+                            title: 'Scalable Algorithms for Real-time Data Processing',
+                            year: 2021,
+                            citations: 156,
+                            doi: '10.1016/j.jcss.2021.54321'
+                        }
+                    ],
+                    'Prof. Michael Chen': [
+                        {
+                            title: 'Advanced Circuit Design with Quantum Computing',
+                            year: 2024,
+                            citations: 23,
+                            doi: '10.1109/QUANTUM.2024.11111'
+                        },
+                        {
+                            title: 'Efficient Power Management in Mobile Devices',
+                            year: 2023,
+                            citations: 67,
+                            doi: '10.1145/POWER.2023.22222'
+                        },
+                        {
+                            title: 'Signal Processing for 5G Networks',
+                            year: 2022,
+                            citations: 112,
+                            doi: '10.1016/j.signal.2022.33333'
+                        }
+                    ],
+                    'Dr. Sarah Johnson': [
+                        {
+                            title: 'CRISPR Gene Editing Applications in Human Cells',
+                            year: 2023,
+                            citations: 78,
+                            doi: '10.1038/nature.2023.44444'
+                        },
+                        {
+                            title: 'Protein Folding Prediction Using AI Models',
+                            year: 2022,
+                            citations: 134,
+                            doi: '10.1126/science.2022.55555'
+                        },
+                        {
+                            title: 'Computational Biology Methods for Disease Analysis',
+                            year: 2021,
+                            citations: 201,
+                            doi: '10.1371/journal.pbio.2021.66666'
+                        }
+                    ],
+                    'Prof. David Williams': [
+                        {
+                            title: 'Quantum Field Theory in Modern Physics',
+                            year: 2024,
+                            citations: 12,
+                            doi: '10.1103/PHYSICS.2024.77777'
+                        },
+                        {
+                            title: 'Particle Acceleration and Detection Methods',
+                            year: 2023,
+                            citations: 45,
+                            doi: '10.1088/physics.2023.88888'
+                        },
+                        {
+                            title: 'Gravitational Waves and Cosmology',
+                            year: 2022,
+                            citations: 89,
+                            doi: '10.1038/astro.2022.99999'
+                        }
+                    ],
+                    'Dr. Emily Rodriguez': [
+                        {
+                            title: 'Novel Synthesis Methods for Organic Compounds',
+                            year: 2023,
+                            citations: 56,
+                            doi: '10.1021/chem.2023.100001'
+                        },
+                        {
+                            title: 'Catalytic Reactions in Green Chemistry',
+                            year: 2022,
+                            citations: 123,
+                            doi: '10.1016/j.cej.2022.200001'
+                        },
+                        {
+                            title: 'Analytical Methods for Drug Development',
+                            year: 2021,
+                            citations: 178,
+                            doi: '10.1039/pharmajournal.2021.300001'
+                        }
+                    ],
+                    'Prof. James Wilson': [
+                        {
+                            title: 'Topological Methods in Modern Mathematics',
+                            year: 2023,
+                            citations: 34,
+                            doi: '10.1090/math.2023.400001'
+                        },
+                        {
+                            title: 'Algebraic Geometry and Integer Solutions',
+                            year: 2022,
+                            citations: 67,
+                            doi: '10.1016/j.aim.2022.500001'
+                        },
+                        {
+                            title: 'Graph Theory Applications in Network Analysis',
+                            year: 2021,
+                            citations: 145,
+                            doi: '10.1016/j.jcta.2021.600001'
+                        }
+                    ],
+                    'Dr. Lisa Anderson': [
+                        {
+                            title: 'Behavioral Psychology in Digital Age',
+                            year: 2023,
+                            citations: 42,
+                            doi: '10.1037/PSYCH.2023.700001'
+                        },
+                        {
+                            title: 'Cognitive Disorders and Treatment Methods',
+                            year: 2022,
+                            citations: 98,
+                            doi: '10.1146/psych.2022.800001'
+                        },
+                        {
+                            title: 'Neuromarketing and Consumer Behavior',
+                            year: 2021,
+                            citations: 156,
+                            doi: '10.1016/j.jconres.2021.900001'
+                        }
+                    ],
+                    'Prof. Robert Martinez': [
+                        {
+                            title: 'Structural Engineering in Sustainable Design',
+                            year: 2023,
+                            citations: 28,
+                            doi: '10.1061/JSTRUCTENGINEERING.2023.1000001'
+                        },
+                        {
+                            title: 'Smart Materials in Civil Infrastructure',
+                            year: 2022,
+                            citations: 73,
+                            doi: '10.1016/j.conbuildmat.2022.1100001'
+                        },
+                        {
+                            title: 'Seismic Design and Analysis Methods',
+                            year: 2021,
+                            citations: 189,
+                            doi: '10.1193/engineering.2021.1200001'
+                        }
+                    ],
+                    'Dr. Amanda Lee': [
+                        {
+                            title: 'Macroeconomic Policy and Market Dynamics',
+                            year: 2023,
+                            citations: 51,
+                            doi: '10.1086/ECON.2023.1300001'
+                        },
+                        {
+                            title: 'Game Theory in Economic Systems',
+                            year: 2022,
+                            citations: 87,
+                            doi: '10.1016/j.mathsocecon.2022.1400001'
+                        },
+                        {
+                            title: 'Financial Markets and Price Discovery',
+                            year: 2021,
+                            citations: 134,
+                            doi: '10.1016/j.jfineco.2021.1500001'
+                        }
+                    ],
+                    'Prof. Thomas Davis': [
+                        {
+                            title: 'Metaphysics and Ontology in Modern Philosophy',
+                            year: 2023,
+                            citations: 19,
+                            doi: '10.1111/PHIL.2023.1600001'
+                        },
+                        {
+                            title: 'Epistemology and Artificial Intelligence',
+                            year: 2022,
+                            citations: 42,
+                            doi: '10.1093/philreview.2022.1700001'
+                        },
+                        {
+                            title: 'Ethics in Technology and Society',
+                            year: 2021,
+                            citations: 78,
+                            doi: '10.1017/S.2021.1800001'
+                        }
+                    ],
+                    'Dr. Junilda Spirollari': [
+                        {
+                            title: 'Neural Network Architectures for Image Recognition',
+                            year: 2023,
+                            citations: 67,
+                            doi: '10.1109/CVPR.2023.1900001'
+                        },
+                        {
+                            title: 'Natural Language Processing with Transformer Models',
+                            year: 2022,
+                            citations: 145,
+                            doi: '10.18653/nlp.2022.2000001'
+                        },
+                        {
+                            title: 'Distributed Computing for Large-Scale Machine Learning',
+                            year: 2021,
+                            citations: 212,
+                            doi: '10.1145/COMPUTING.2021.2100001'
+                        }
+                    ],
+                    'Prof. Christopher Moore': [
+                        {
+                            title: 'Cloud Infrastructure and DevOps Practices',
+                            year: 2023,
+                            citations: 38,
+                            doi: '10.1145/CLOUD.2023.2200001'
+                        },
+                        {
+                            title: 'Cybersecurity in Cloud Computing Environments',
+                            year: 2022,
+                            citations: 89,
+                            doi: '10.1145/SECURITY.2022.2300001'
+                        },
+                        {
+                            title: 'Containerization and Orchestration Technologies',
+                            year: 2021,
+                            citations: 167,
+                            doi: '10.1145/DEVOPS.2021.2400001'
+                        }
+                    ]
+                };
+
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                return papersDatabase[professorName] || [];
+            } catch (error) {
+                console.error('Error fetching papers:', error);
+                return [];
+            }
+        }
+
+        // ============================================
+        // MOCK DATA FUNCTION
+        // This simulates the GraphQL API response
+        // In production, this would call the real API
+        // ============================================
+
+        // ============================================
+        // RENDER PAPERS FUNCTION
+        // Displays papers/publications in the papers section
+        // ============================================
+
+        function renderPapers(papers, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            if (!papers || papers.length === 0) {
+                container.innerHTML = '<p class="no-papers">No publications found</p>';
+                return;
+            }
+
+            let html = '<div class="papers-list">';
+            papers.forEach(paper => {
+                const scholarUrl = `https://scholar.google.com/scholar?q="${encodeURIComponent(paper.title)}"`;
+                html += `
+                    <div class="paper-item">
+                        <h4 class="paper-title">${paper.title}</h4>
+                        <div class="paper-meta">
+                            <span class="paper-year">${paper.year}</span>
+                            <span class="paper-citations">📊 ${paper.citations} citations</span>
+                        </div>
+                        <a href="${scholarUrl}" target="_blank" class="paper-link">View on Google Scholar →</a>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            container.innerHTML = html;
+        }
+
+        async function mockFetchProfessors(query) {
+            try {
+                // Call the local API server endpoint (which proxies to Rate My Professor)
+                // This avoids CORS issues that occur when calling external APIs directly from the browser
+                const response = await fetch(`http://localhost:3000/api/search-professors?name=${encodeURIComponent(query)}&max=150`);
+
+                if (!response.ok) {
+                    throw new Error('Local API server is unavailable. Please run "npm run api-server" in 219_tools.');
+                }
+
+                const data = await response.json();
+
+                // Parse the API response
+                if (data.results && data.results.length > 0) {
+                    const professors = data.results.map((prof, idx) => ({
+                        id: prof.id || `prof-${idx}`,
+                        name: prof.name || `${prof.firstName} ${prof.lastName}`,
+                        school: prof.school || 'Unknown School',
+                        department: prof.department || 'Unknown Department',
+                        avgRating: prof.avgRating || 0,
+                        numRatings: prof.numRatings || 0,
+                        avgDifficulty: prof.avgDifficulty || 0,
+                        wouldTakeAgain: prof.wouldTakeAgain || 0
+                    }));
+
+                    if (professors.length > 0) {
+                        return professors;
+                    }
+                }
+
+                // Real API only: no fabricated professor fallback
+                return [];
+
+            } catch (error) {
+                console.error('Error fetching from Rate My Professor server:', error);
+                throw error;
+            }
+        }
+
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            const query = document.getElementById('searchInput').value;
+            searchProfessor(query);
+        });
+
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = document.getElementById('searchInput').value;
+                searchProfessor(query);
+            }
+        });
+
+        document.getElementById('sortByRating').addEventListener('change', () => {
+            if (appState.allProfessors.length > 0) {
+                applyFilters();
+                displayResults();
+            }
+        });
+
+        document.getElementById('showOnlyHighRated').addEventListener('change', () => {
+            if (appState.allProfessors.length > 0) {
+                applyFilters();
+                displayResults();
+            }
+        });
+
+        document.getElementById('schoolFilter').addEventListener('change', () => {
+            if (appState.allProfessors.length > 0) {
+                applyFilters();
+                displayResults();
+            }
+        });
+
+        document.getElementById('showStats').addEventListener('change', () => {
+            if (appState.allProfessors.length > 0) {
+                displayStats();
+            }
+        });
+
+        // Initial instructions
+        document.getElementById('searchInput').focus();
+        updateStatus('Enter a professor name, school, or department to search', 'loading');
+        setTimeout(hideStatus, 5000);
+    </script>
+</body>
+</html>

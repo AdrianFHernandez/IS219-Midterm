@@ -1,4 +1,4 @@
-# Rate My Professor Search Website (219_tools)
+# Rate My Professor Search Website
 
 This project runs a website UI at `scripts/rmp_ui.html` that searches live Rate My Professor data through a local API server.
 
